@@ -42,11 +42,11 @@ task run_null_model {
     Int null_disk
 
     command {
-        Rscript /staar_rare_variant_pipeline/STAAR_null_model.R ${pheno_file} ${null_file} ${sample_name} ${outcome_name} ${outcome_type} ${covariate_names} ${kinship_file} ${het_var_name}
+        Rscript /staar_workflow/STAAR_null_model.R ${pheno_file} ${null_file} ${sample_name} ${outcome_name} ${outcome_type} ${covariate_names} ${kinship_file} ${het_var_name}
     }
 
     runtime {
-        docker: "quay.io/sheilagaynor/staar_rare_variant_pipeline"
+        docker: "quay.io/sheilagaynor/staar_workflow"
         memory: "${null_memory} GB"
         disks: "local-disk ${null_disk} HDD"
     }
