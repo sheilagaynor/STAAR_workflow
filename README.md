@@ -1,4 +1,4 @@
-# staar_rare_variant_pipeline: Rare variant analysis methods for WGS data
+# STAAR_workflow: Rare variant analysis methods for WGS data
 Maintainer: Sheila Gaynor
 Version: 1.0
 
