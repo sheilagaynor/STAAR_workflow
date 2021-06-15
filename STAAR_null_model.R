@@ -65,6 +65,7 @@ if (!grepl('csv$',pheno_file,ignore.case=TRUE)){
   stop(stop_msg)
 }
 pheno <- read.csv(pheno_file, header=TRUE, as.is=TRUE)
+pheno <- pheno[order(pheno[,sample_name]),]
 cat('Loaded Phenotypes: no. rows:',nrow(pheno),' no. cols:',ncol(pheno),'\n')
 # Subset to complete cases for phenotype file, create null model formula
 if ( covariate_names=='NA' & het_var_name=='NA' ){

@@ -6,7 +6,7 @@ Version: 1.0
 Workflow to perform aggregate rare variant tests for sequencing studies and genetic data. Implements the variant-Set Test for Association using Annotation infoRmation (STAAR) procedure, as well as SKAT, Burden, and ACAT tests for both continuous and dichotomous traits. The STAAR method incorporates qualitative functional categories and quantitative complementary functional annotations (Li and Li et al, 2020). The workflow accounts for population structure and relatedness, and scales for large whole genome sequencing studies.
 
 ## Functionality:
-The workflow contains two key steps. The workflow fits a null model for testing, incorporating the outcome, covariates, and kinship (optional). The workflow then uses the null model, genotypes, and aggregation units (optional) to run rare variant association analyses.
+The workflow contains three tasks, including two key analysis steps. The workflow fits a null model for testing, incorporating the outcome, covariates, and kinship (optional). The workflow then uses the null model, genotypes, and aggregation units (optional) to run rare variant association analyses. Lastly, results are compiled.
 
 ## Funcional inputs:
 ### Null model R/WDL inputs:
@@ -45,6 +45,6 @@ The workflow contains two key steps. The workflow fits a null model for testing,
 
 
 ## Resulting output:
-The workflow produces a file containing the null model (.Rds) and results of the aggregation test in a compressed file (.gz).
+The workflow produces a file containing the null model (.Rds) and all results of the aggregation test in a txt file (.txt).
 
 

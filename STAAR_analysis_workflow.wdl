@@ -105,11 +105,21 @@ workflow STAAR_analysis {
         }
     }
 
+    call run_compilation {
+		input:
+			results_array = if (length(annot_avail) == length(geno_files)) then run_analysis.results else run_analysis_annotfree.results
+	  }
+
     output {
         File null_model = null_file
-        Array[File]? result_analysis = run_analysis.results
-        Array[File]? result_analysis_annotfree = run_analysis_annotfree.results
+        File staar_results = run_compilation.compiled_results
     }
+
+    meta {
+                author: "Sheila Gaynor"
+                email: "sheilagaynor@hsph.harvard.edu"
+                description: "Run rare variant analysis incorporating functional annotations using STAAR and return compiled results."
+        }
 }
 
 
@@ -176,4 +186,27 @@ task run_analysis {
     output {
         File results = select_first(glob("*.gz"))
     }
+}
+
+task run_compilation {
+  Array[File] results_array
+
+  command <<<
+  set -- results_array
+  {
+    gzcat "$1"; shift
+    for file do
+        gzcat "$file" | sed '1d'
+    done
+    } > compiled_results.txt
+  >>>
+
+    runtime {
+      docker: "ubuntu:latest"
+      disks: "local-disk 10 HDD"
+    }
+
+    output {
+    File compiled_results = "compiled_results.txt"
+  }
 }
