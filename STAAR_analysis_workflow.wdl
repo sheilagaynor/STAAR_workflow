@@ -194,10 +194,8 @@ task run_compilation {
   command <<<
   set -- results_array
   {
-    gzcat "$1"; shift
-    for file do
-        gzcat "$file" | sed '1d'
-    done
+    gzcat ${results_array[0]}; shift
+    for file in ${sep=" " results_array}; do gzcat $file | sed '1d'; done
     } > compiled_results.txt
   >>>
 
