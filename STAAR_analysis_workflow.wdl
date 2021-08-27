@@ -8,7 +8,7 @@ workflow STAAR_analysis {
     String? outcome_name
     String? outcome_type = "continuous"
     String? covariate_names = "NA"
-    File? kinship_file = "NA"
+    File? kinship_file
     String? het_var_name = "NA"
     Int? null_memory = 25
     Int? null_disk = 50
@@ -131,13 +131,13 @@ task run_null_model {
     String outcome_name
     String outcome_type
     String covariate_names
-    File kinship_file
+    File? kinship_file
     String het_var_name
     Int null_memory
     Int null_disk
 
     command {
-        Rscript /STAAR_null_model.R ${pheno_file} ${null_file_name} ${sample_name} ${outcome_name} ${outcome_type} ${covariate_names} ${kinship_file} ${het_var_name}
+        Rscript /STAAR_null_model.R ${pheno_file} ${null_file_name} ${sample_name} ${outcome_name} ${outcome_type} ${covariate_names} ${default="NA" kinship_file} ${het_var_name}
     }
 
     runtime {

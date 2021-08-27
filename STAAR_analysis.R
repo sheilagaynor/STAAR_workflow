@@ -133,7 +133,11 @@ n_cores <- min(c(num_cores, parallel::detectCores(logical = TRUE)))
 
 #####################
 # Define sample and variants of interest
-pheno_id <- as.character(null_model$id_include)
+if(any(class(null_model)=='glmmkin')){
+  pheno_id <- as.character(null_model$id_include)
+} else {
+  pheno_id <- as.character(null_model$data$ID)
+}
 variant_id <- seqGetData(geno_all, "variant.id")
 if (agds_file!='None'){
   filter <- seqGetData(geno_all, "annotation/filter")
