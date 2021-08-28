@@ -1,0 +1,13 @@
+{
+  "STAAR_analysis.agds_annot_channels":"annotation/info/sim_annotation/annot_1,annotation/info/sim_annotation/annot_2,annotation/info/sim_annotation/annot_3,annotation/info/sim_annotation/annot_4,annotation/info/sim_annotation/annot_5,annotation/info/sim_annotation/annot_6,annotation/info/sim_annotation/annot_7,annotation/info/sim_annotation/annot_8,annotation/info/sim_annotation/annot_9,annotation/info/sim_annotation/annot_10",
+  "STAAR_analysis.agds_file":"yes",
+  "STAAR_analysis.agg_file":"testfiles/agg_units.csv.gz",
+  "STAAR_analysis.cand_file":"testfiles/candidate_gene.csv",
+  "STAAR_analysis.covariate_names":"X1,X2",
+  "STAAR_analysis.geno_files":["testfiles/genotypes.gds"],
+  "STAAR_analysis.null_file_name":"null_model",
+  "STAAR_analysis.outcome_name":"Y",
+  "STAAR_analysis.pheno_file":"testfiles/phenotypes.csv",
+  "STAAR_analysis.results_file":"out_test",
+  "STAAR_analysis.sample_name":"ID"
+}
