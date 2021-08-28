@@ -17,8 +17,8 @@ workflow STAAR_analysis {
     Array[File] geno_files
     Array[File]? annot_files
     String results_file
-    String? agds_file
-    String? agds_annot_channels
+    String? agds_file = "None"
+    String? agds_annot_channels = "None"
     File? agg_file
     File? cond_file
     Array[File]? cond_geno_files
@@ -156,8 +156,8 @@ task run_analysis {
     File geno_file
     File? annot_file
     String results_file
-    String? agds_file
-    String? agds_annot_channels
+    String agds_file
+    String agds_annot_channels
     File? agg_file
     File? cond_file
     Array[File]? cond_geno_files
