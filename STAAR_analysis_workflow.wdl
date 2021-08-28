@@ -64,6 +64,8 @@ workflow STAAR_analysis {
                     geno_file = geno_in,
                     annot_file = annot_in,
                     results_file = results_file,
+                    agds_file = agds_file,
+                    agds_annot_channels = agds_annot_channels,
                     agg_file = agg_file,
                     cond_file = cond_file,
                     cond_geno_files = cond_geno_files,
