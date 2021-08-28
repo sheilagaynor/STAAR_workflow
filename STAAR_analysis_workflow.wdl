@@ -88,6 +88,7 @@ workflow STAAR_analysis {
                 input:
                   null_file = null_file,
                   geno_file = geno_in,
+                  annot_file = annot_in,
                   results_file = results_file,
                   agds_file = agds_file,
                   agds_annot_channels = agds_annot_channels,
