@@ -23,13 +23,13 @@ workflow STAAR_analysis {
     File? cond_file
     Array[File]? cond_geno_files
     File? cand_file
-    Float? maf_thres = 0.05
+    Float? maf_thres = 0.01
     Int? mac_thres = 1
     Int? window_length = 2000
     Int? step_length = 1000
     # Compute inputs
     Int? num_cores = 3
-    Int? num_chunk_divisions = 100000
+    Int? num_iterations = 20
     Int? test_memory = 25
     Int? test_disk = 50
 
@@ -75,7 +75,7 @@ workflow STAAR_analysis {
                     window_length = window_length,
                     step_length = step_length,
                     num_cores = num_cores,
-                    num_chunk_divisions = num_chunk_divisions,
+                    num_iterations = num_iterations,
                     test_memory = test_memory,
                     test_disk = test_disk
             }
@@ -101,7 +101,7 @@ workflow STAAR_analysis {
                   window_length = window_length,
                   step_length = step_length,
                   num_cores = num_cores,
-                  num_chunk_divisions = num_chunk_divisions,
+                  num_iterations = num_iterations,
                   test_memory = test_memory,
                   test_disk = test_disk
             }
@@ -170,12 +170,12 @@ task run_analysis {
     Int window_length
     Int step_length
     Int num_cores
-    Int num_chunk_divisions
+    Int num_iterations
     Int test_memory
     Int test_disk
 
     command {
-        Rscript /STAAR_analysis.R ${null_file} ${geno_file} ${default="None" annot_file} ${results_file} ${default="None" agds_file} ${default="None" agds_annot_channels} ${default="None" agg_file} ${default="None" cond_file} ${default="None" sep="," cond_geno_files} ${default="None" cand_file} ${maf_thres} ${mac_thres} ${window_length} ${step_length} ${num_cores} ${num_chunk_divisions}
+        Rscript /STAAR_analysis.R ${null_file} ${geno_file} ${default="None" annot_file} ${results_file} ${default="None" agds_file} ${default="None" agds_annot_channels} ${default="None" agg_file} ${default="None" cond_file} ${default="None" sep="," cond_geno_files} ${default="None" cand_file} ${maf_thres} ${mac_thres} ${window_length} ${step_length} ${num_cores} ${num_iterations}
     }
 
     runtime {
@@ -184,6 +184,7 @@ task run_analysis {
         maxRetries: 3
         memory: "${test_memory} GB"
         disks: "local-disk ${test_disk} HDD"
+        cpu: "${num_cores}"
     }
 
     output {
@@ -197,8 +198,8 @@ task run_compilation {
   command <<<
   set -- results_array
   {
-    gunzip -c ${results_array[0]}; shift
-    for file in ${sep=" " results_array}; do gunzip 0c $file | sed '1d'; done
+    gunzip -c ${results_array[0]} | sed '1q'; shift
+    for file in ${sep=" " results_array}; do gunzip -c $file | sed '1d'; done
     } > compiled_results.txt
   >>>
 

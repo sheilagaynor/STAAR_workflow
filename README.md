@@ -1,6 +1,6 @@
 # STAAR_workflow: Rare variant analysis methods for WGS data
 Maintainer: Sheila Gaynor
-Version: 1.0
+Version: 1.1
 
 ## Description:
 Workflow to perform aggregate rare variant tests for sequencing studies and genetic data. Implements the variant-Set Test for Association using Annotation infoRmation (STAAR) procedure, as well as SKAT, Burden, and ACAT tests for both continuous and dichotomous traits. The STAAR method incorporates qualitative functional categories and quantitative complementary functional annotations (Li and Li et al, 2020). The workflow accounts for population structure and relatedness, and scales for large whole genome sequencing studies.
@@ -33,12 +33,12 @@ The workflow contains three tasks, including two key analysis steps. The workflo
 - **cond_file**: [file] file containing the variants to be conditioned upon with columns 'chr', 'pos', 'ref', 'alt' (.Rds, .Rdata, .csv)
 - **cond_geno_files**: [file] file containing genotypes for all individuals from null model for conditional analysis; often same as geno_file (.gds)
 - **cand_file**: [file] file containing units (agg_file required)/windows for candidate sets of interest with columns 'group_id' or 'chr', 'start', 'end' (.Rds, .Rdata, .csv)
-- **maf_thres**: [int] AF threshold below which variants will be considered in rare variant analysis, 0.05 [default] (numeric)
+- **maf_thres**: [int] AF threshold below which variants will be considered in rare variant analysis, 0.01 [default] (numeric)
 - **mac_thres**: [int] AC threshold above which variants will be considered in rare variant analysis, 1 [default] (numeric)
 - **window_length**: [int] length of window for region-based analysis, 2000 [default] (numeric)
 - **step_length**: [int] length of overlap for region-based analysis, 1000 [default] (numeric)
 - **num_cores**: [int] number of cores to be used in parallelized analysis, 3 [default] (numeric)
-- **num_chunk_divisions**: [int] for agg units, number of units to consider at a time within a parallel loop; for region-based, length of chunk for windows to consider at a time within a parallel loop, 3 [default] (numeric)
+- **num_iterations**: [int] number of iterations to run in parallel loop, i.e. how many chunks to split sets into, 20 [default] (numeric)
 ### Association test WDL inputs:
 - **null_memory**: [int] requested memory in GB (numeric)
 - **null_disk**: [int] requested disk size (numeric)

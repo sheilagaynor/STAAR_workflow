@@ -10,13 +10,14 @@
 # cond_file : file containing the variants to be conditioned upon with columns 'chr', 'pos', 'ref', 'alt' (.Rds, .Rdata, .csv)
 # cond_geno_files : files containing genotypes for at least all individuals from null model for conditional analysis; often same as geno_file (.gds)
 # cand_file : file containing units/windows for candidate sets of interest with columns 'group_id' or 'chr', 'start', 'end' (.Rds, .Rdata, .csv)
-# maf_thres : AF threshold below which variants will be considered in rare variant analysis, 0.05 default (numeric)
+# maf_thres : AF threshold below which variants will be considered in rare variant analysis, 0.01 default (numeric)
 # mac_thres : AC threshold above which variants will be considered in rare variant analysis, 1 default (numeric)
 # window_length : length of window for region-based analysis, 2000 default (numeric)
 # step_length : length of overlap for region-based analysis, 1000 default (numeric)
 # num_cores : number of cores to be used in parallelized analysis (numeric)
-# num_chunk_divisions : for agg units, number of units to consider at a time within a parallel loop;
-#                       for region-based, length of chunk for windows to consider at a time within a parallel loop (numeric)
+# num_iterations : number of iterations to run in parallel loop, i.e. how many chunks to split sets into, 20 [default] (numeric)
+
+Sys.setenv(MKL_NUM_THREADS = 1)
 
 ## Parse arguments
 args <- commandArgs(T)
@@ -40,7 +41,7 @@ window_length <- as.numeric(args[13])
 step_length <- as.numeric(args[14])
 # Compute inputs
 num_cores <- as.numeric(args[15])
-num_chunk_divisions <- as.numeric(args[16])
+num_iterations <- as.numeric(args[16])
 
 #####################
 # Function for input file processing
@@ -155,22 +156,18 @@ chr <- variant_info$chr[1]
 if(length(unique(chr)) > 1) stop("Multiple chromosomes detected; terminating \n")
 chr <- chr[1] 
 #Get the aggregation units
+chunk <- function(x,n) split(x, cut(seq_along(x), n, labels = FALSE))
 if(agg_file!='None'){
-  chunk <- function(x,n) split(x, cut(seq_along(x), n, labels = FALSE))
-  aggVarList <- aggregateGRangesList(agg_units)
-  n_chunk <- length(chunk(names(aggVarList),num_chunk_divisions))
+  agg_units <- agg_units[agg_units$chr == chr,]
+  agg_names <- unique(agg_units$group_id)
+  agg_chunks <- chunk(agg_names,min(num_iterations,length(agg_names)))
+  n_chunk <- length(agg_chunks)
 } else {
   if (cand_file=='None'){
-    #Get the genome chunks for windows
-    grange_df <- data.frame(chr=chr, start=min(variant_info$pos), end=max(variant_info$pos))
-    grange <- makeGRangesFromDataFrame(grange_df)
-    grange$seg.length <- num_chunk_divisions
-    #Get range data
-    range_data <- do.call(c, lapply(seq_along(grange), function(i) {
-      x <- grange[i]
-      window.start <- seq(BiocGenerics::start(x), BiocGenerics::end(x), x$seg.length)
-      GRanges(seqnames = seqnames(x), IRanges(window.start, width = x$seg.length))}))
-    n_chunk  <- length(range_data) ; rm(grange_df)
+    window_start <- seq(min(variant_info$pos), max(variant_info$pos), step_length)
+    windows <- GRanges(seqnames=chr, ranges=IRanges(start=window_start, width=window_length))
+    window_chunks <- chunk(1:length(windows),min(num_iterations,length(windows)))
+    n_chunk <- length(window_chunks)
   } else {
     #Get the genome chunks for windows from candidate input
     grange_df <- data.frame(chr=cand_in$chr, start=cand_in$start, end=cand_in$end)
@@ -220,8 +217,8 @@ test_chunk <- function( indx ){
     if (agds_file!='None'){
       seqSetFilter(geno,sample.id=pheno_id,variant.id=variant_id[SNVlist],verbose=F)	
     }
-    if( length(names(aggVarList)) < indx) return(data.frame())
-    agg_var <- aggVarList[names(aggVarList) %in% chunk(names(aggVarList),num_chunk_divisions)[[indx]]]
+    agg_var <- aggregateGRangesList(agg_units[agg_units$group_id %in% agg_chunks[[indx]],])
+    if( length(names(agg_var)) < 1) return(data.frame())
     seqSetFilter(geno, variant.sel = agg_var, verbose = TRUE)
     #Subset to rare variants for efficiency
     chunk_variant_id <- seqGetData(geno,'variant.id')
@@ -317,11 +314,10 @@ test_chunk <- function( indx ){
 
   #Next for window based
   if(agg_file=='None' & cand_file=='None'){
-    #Get variants in region
-    range_data <- resize(range_data, width(range_data) + window_length, fix = "start")
     #Extract variants in region
     variant_info <- variantInfo(geno, alleles = FALSE, expanded=FALSE)
-    indx_vars <- (variant_info$pos>=start(range_data[indx]@ranges)) & (variant_info$pos<=end(range_data[indx]@ranges))
+    current_windows <- windows[window_chunks[[indx]]]
+    indx_vars <- (variant_info$pos>=start(current_windows)[1]) & (variant_info$pos<=tail(end(current_windows),1))
     if (agds_file!='None'){
       seqSetFilter(geno,sample.id=pheno_id,variant.id=variant_info$variant.id[SNVlist & indx_vars])
     } else {
@@ -359,23 +355,14 @@ test_chunk <- function( indx ){
         genotypes <- genotypes[,match(geno_annot_var,geno_matching)]
         geno_variant_rare_id <- geno_variant_rare_id[match(geno_annot_var,geno_matching),]
       }
-      #Get the genome chunks within this iteration for windows
-      grange_df <- data.frame(chr=chr, start=start(range_data[indx]@ranges), end=end(range_data[indx]@ranges))
-      grange <- makeGRangesFromDataFrame(grange_df)
-      grange$seg.length <- step_length
-      #Get range data
-      range_data_chunk <- do.call(c, lapply(seq_along(grange), function(i) {
-        x <- grange[i]
-        window.start <- seq(BiocGenerics::start(x), BiocGenerics::end(x), x$seg.length)
-        GRanges(seqnames = seqnames(x), IRanges(window.start, width = window_length))}))
       # Loop through the windows
       results <- c()
-      for ( window_indx in 1:length(range_data_chunk)) {
+      for ( window_indx in 1:length(current_windows)) {
         # Select the region from the geno matrix
-        geno_region <- genotypes[,(geno_variant_rare_id$pos>= start(range_data_chunk[window_indx]@ranges)) & (geno_variant_rare_id$pos<= end(range_data_chunk[window_indx]@ranges))]
+        geno_region <- genotypes[,(geno_variant_rare_id$pos>= start(current_windows[window_indx])) & (geno_variant_rare_id$pos<= end(current_windows[window_indx]))]
         if (exists("annot_chunk")){
           # Select annotations from chunk matrix
-          annot_region <- annot_chunk[(geno_variant_rare_id$pos>= start(range_data_chunk[window_indx]@ranges)) & (geno_variant_rare_id$pos<= end(range_data_chunk[window_indx]@ranges)),]
+          annot_region <- annot_chunk[(geno_variant_rare_id$pos>= start(current_windows[window_indx])) & (geno_variant_rare_id$pos<= end(current_windows[window_indx])),]
           annot_region <- annot_region[,!(names(annot_region) %in% c("variant.id","chr","pos","ref","alt"))]
         }
         pvalues <- 0
@@ -393,7 +380,7 @@ test_chunk <- function( indx ){
           }
         }
         if(class(pvalues)=="list") {
-          results_temp <- c(chr, start(range_data_chunk[window_indx]@ranges), end(range_data_chunk[window_indx]@ranges), unlist(pvalues[-2]))
+          results_temp <- c(chr, start(current_windows[window_indx]), end(current_windows[window_indx]), unlist(pvalues[-2]))
           results <- rbind(results,results_temp)
         }
       }
