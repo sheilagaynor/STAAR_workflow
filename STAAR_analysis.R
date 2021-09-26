@@ -282,9 +282,9 @@ test_chunk <- function( indx ){
               non_miss <- rowSums(is.na(annot_chunk)) == 0
               annot_chunk <- annot_chunk[non_miss,]
             }
+            pvalues <- 0
             if (!is.null(dim(genotypes))){
               genotypes <- genotypes[,non_miss]
-              pvalues <- 0
               if(cond_file=='None'){
                 try(pvalues <- STAAR(genotypes,null_model,annot_chunk))
               } else {
