@@ -274,6 +274,15 @@ test_chunk <- function( indx ){
             }
             annot_chunk <- data.frame(annot_tab) ; rm(annot_tab)
             names(annot_chunk) <- annot_str_spl
+            ## Remove missing values
+            if (is.null(dim(annot_chunk))){
+              non_miss <- !is.na(annot_chunk)
+              annot_chunk <- annot_chunk[non_miss]
+            } else {
+              non_miss <- rowSums(is.na(annot_chunk)) == 0
+              annot_chunk <- annot_chunk[non_miss,]
+            }
+            genotypes <- genotypes[,non_miss]
             pvalues <- 0
             if(cond_file=='None'){
               try(pvalues <- STAAR(genotypes,null_model,annot_chunk))
