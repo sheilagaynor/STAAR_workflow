@@ -244,6 +244,7 @@ test_chunk <- function( indx ){
         while(iterateFilter(iterator)) {
           var_info_iter[[iter]] <- variantInfo(iterator) ; iter <- iter + 1
         }
+        agg_var <- agg_var[sapply(var_info_iter, function(x) nrow(x)>0)]
         var_info_iter <- Filter(function(x) nrow(x) > 0, var_info_iter)
         results <- c()
         for ( var_set in 1:length(var_info_iter)) {
