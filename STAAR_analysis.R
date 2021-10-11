@@ -223,12 +223,13 @@ test_chunk <- function( indx ){
     #Subset to rare variants for efficiency
     chunk_variant_id <- seqGetData(geno,'variant.id')
     if (length(chunk_variant_id)>1){
-      freq_vec <- seqAlleleFreq(geno)
-      rare_freq_inc <- ((freq_vec <= maf_thres) | (1 - freq_vec <= maf_thres)) & (freq_vec != 0) & (freq_vec != 1)
+      n_samp <- length(seqGetData(geno,"sample.id"))
       ct_vec <- seqAlleleCount(geno)
-      rare_ct_inc <- (ct_vec > mac_thres)
-      seqSetFilter(geno, variant.id=chunk_variant_id[rare_freq_inc & rare_ct_inc], verbose = TRUE)
-      rm(freq_vec); rm(rare_freq_inc); rm(rare_ct_inc)
+      min_ct_vec <- pmin(ct_vec, (2*n_samp) - ct_vec)
+      min_freq_vec <- min_ct_vec / (2*n_samp)
+      rare_inc <- (min_freq_vec < maf_thres) & (min_ct_vec != 0) & (min_ct_vec > mac_thres)
+      seqSetFilter(geno, variant.id=chunk_variant_id[rare_inc], verbose = TRUE)
+      rm(ct_vec); rm(min_ct_vec); rm(min_freq_vec); rm(n_samp); rm(rare_inc)
       #Subset annotations for efficiency [retains position; intersection not required here]
       if(annot_file!='None'){
         chunk_variant_id <- variantInfo(geno, alleles = TRUE, expanded=FALSE)
@@ -338,12 +339,13 @@ test_chunk <- function( indx ){
     #Subset to rare variants for efficiency or break out
     chunk_variant_id <- seqGetData(geno,'variant.id')
     if (length(chunk_variant_id)>1) {
-      freq_vec <- seqAlleleFreq(geno)
-      rare_freq_inc <- ((freq_vec <= maf_thres) | (1 - freq_vec <= maf_thres)) & (freq_vec != 0) & (freq_vec != 1)
+      n_samp <- length(seqGetData(geno,"sample.id"))
       ct_vec <- seqAlleleCount(geno)
-      rare_ct_inc <- (ct_vec > mac_thres)
-      seqSetFilter(geno, variant.id=chunk_variant_id[rare_freq_inc & rare_ct_inc], verbose = TRUE)
-      rm(freq_vec); rm(rare_freq_inc); rm(rare_ct_inc)
+      min_ct_vec <- pmin(ct_vec, (2*n_samp) - ct_vec)
+      min_freq_vec <- min_ct_vec / (2*n_samp)
+      rare_inc <- (min_freq_vec < maf_thres) & (min_ct_vec != 0) & (min_ct_vec > mac_thres)
+      seqSetFilter(geno, variant.id=chunk_variant_id[rare_inc], verbose = TRUE)
+      rm(ct_vec); rm(min_ct_vec); rm(min_freq_vec); rm(n_samp); rm(rare_inc)
       # Match the genotype and phenotype ids
       sample.id.match <- match(pheno_id, seqGetData(geno,"sample.id"))
       genotypes <- seqGetData(geno, "$dosage")
@@ -412,12 +414,13 @@ test_chunk <- function( indx ){
     #Subset to rare variants for efficiency or break out
     chunk_variant_id <- seqGetData(geno,'variant.id')
     if (length(chunk_variant_id)>1) {
-      freq_vec <- seqAlleleFreq(geno)
-      rare_freq_inc <- ((freq_vec <= maf_thres) | (1 - freq_vec <= maf_thres)) & (freq_vec != 0) & (freq_vec != 1)
+      n_samp <- length(seqGetData(geno,"sample.id"))
       ct_vec <- seqAlleleCount(geno)
-      rare_ct_inc <- (ct_vec > mac_thres)
-      seqSetFilter(geno, variant.id=chunk_variant_id[rare_freq_inc & rare_ct_inc], verbose = TRUE)
-      rm(freq_vec); rm(rare_freq_inc); rm(rare_ct_inc)
+      min_ct_vec <- pmin(ct_vec, (2*n_samp) - ct_vec)
+      min_freq_vec <- min_ct_vec / (2*n_samp)
+      rare_inc <- (min_freq_vec < maf_thres) & (min_ct_vec != 0) & (min_ct_vec > mac_thres)
+      seqSetFilter(geno, variant.id=chunk_variant_id[rare_inc], verbose = TRUE)
+      rm(ct_vec); rm(min_ct_vec); rm(min_freq_vec); rm(n_samp); rm(rare_inc)
       # Match the genotype and phenotype ids
       sample.id.match <- match(pheno_id, seqGetData(geno,"sample.id"))
       # Get genotype as matrix
