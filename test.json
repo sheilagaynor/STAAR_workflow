@@ -8,6 +8,6 @@
   "STAAR_analysis.null_file_name":"null_model",
   "STAAR_analysis.outcome_name":"Y",
   "STAAR_analysis.pheno_file":"testfiles/phenotypes.csv",
-  "STAAR_analysis.results_file":"out_test",
+  "STAAR_analysis.results_file_name":"out_test",
   "STAAR_analysis.sample_name":"ID"
 }

@@ -16,8 +16,8 @@ workflow STAAR_analysis {
     # run_analysis inputs
     Array[File] geno_files
     Array[File]? annot_files
-    String results_file
-    String? agds_file = "None"
+    String results_file_name
+    String? agds_file_input = "None"
     String? agds_annot_channels = "None"
     File? agg_file
     File? cond_file
@@ -63,8 +63,8 @@ workflow STAAR_analysis {
                     null_file = null_file,
                     geno_file = geno_in,
                     annot_file = annot_in,
-                    results_file = results_file,
-                    agds_file = agds_file,
+                    results_file_name = results_file_name,
+                    agds_file_input = agds_file_input,
                     agds_annot_channels = agds_annot_channels,
                     agg_file = agg_file,
                     cond_file = cond_file,
@@ -89,8 +89,8 @@ workflow STAAR_analysis {
                   null_file = null_file,
                   geno_file = geno_in,
                   annot_file = annot_in,
-                  results_file = results_file,
-                  agds_file = agds_file,
+                  results_file_name = results_file_name,
+                  agds_file_input = agds_file_input,
                   agds_annot_channels = agds_annot_channels,
                   agg_file = agg_file,
                   cond_file = cond_file,
@@ -158,8 +158,8 @@ task run_analysis {
     File null_file
     File geno_file
     File? annot_file
-    String results_file
-    String agds_file
+    String results_file_name
+    String agds_file_input
     String agds_annot_channels
     File? agg_file
     File? cond_file
@@ -175,7 +175,7 @@ task run_analysis {
     Int test_disk
 
     command {
-        Rscript /STAAR_analysis.R ${null_file} ${geno_file} ${default="None" annot_file} ${results_file} ${default="None" agds_file} ${default="None" agds_annot_channels} ${default="None" agg_file} ${default="None" cond_file} ${default="None" sep="," cond_geno_files} ${default="None" cand_file} ${maf_thres} ${mac_thres} ${window_length} ${step_length} ${num_cores} ${num_iterations}
+        Rscript /STAAR_analysis.R ${null_file} ${geno_file} ${default="None" annot_file} ${results_file_name} ${default="None" agds_file_input} ${default="None" agds_annot_channels} ${default="None" agg_file} ${default="None" cond_file} ${default="None" sep="," cond_geno_files} ${default="None" cand_file} ${maf_thres} ${mac_thres} ${window_length} ${step_length} ${num_cores} ${num_iterations}
     }
 
     runtime {

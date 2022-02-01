@@ -3,8 +3,8 @@
 # null_file : file containing output from null model fitting via STAAR (.Rds)
 # geno_file : file containing genotypes for at least all individuals from null model, optionally containing the given annotation channels (.gds)
 # annot_file : file containing annotations as input with columns 'chr', 'pos', 'ref', 'alt' (.Rds, .Rdata, .csv)
-# results_file : string of name of results file output (string)
-# agds_file : string indicating whether input geno is an agds file containing the annotations, 'None' if not provided (string)
+# results_file_name : string of name of results file output (string)
+# agds_file_input : string indicating whether input geno is an agds file containing the annotations, 'None' if not provided (string)
 # agds_annot_channels : comma-separated names of channels in agds to be treated as annotations (string)
 # agg_file : file containing the aggregation units for set-based analysis with columns 'chr', 'pos', 'ref', 'alt', 'group_id' (.Rds, .Rdata, .csv)
 # cond_file : file containing the variants to be conditioned upon with columns 'chr', 'pos', 'ref', 'alt' (.Rds, .Rdata, .csv)
@@ -27,8 +27,8 @@ args <- commandArgs(T)
 null_file <- args[1]
 geno_file <- args[2]
 annot_file <- args[3]
-results_file <- args[4]
-agds_file <- args[5]
+results_file_name <- args[4]
+agds_file_input <- args[5]
 agds_annot_channels <- args[6]
 agg_file <- args[7]
 cond_file <- args[8]
@@ -106,9 +106,9 @@ null_model <- readRDS(null_file)
 geno_all <- seqOpen(geno_file)
 cat('Read in provided null model and genotype files \n')
 # Read in files: optional files as provided
-if (annot_file=='None' & agds_file=='None'){
+if (annot_file=='None' & agds_file_input=='None'){
   cat('No annotation file or aGDS provided, proceeding without annotations \n')
-} else if (annot_file!='None' & agds_file=='None') {
+} else if (annot_file!='None' & agds_file_input=='None') {
   annot_table <- get_file(annot_file,'Annotation')
 }
 if (agg_file!='None'){
@@ -140,7 +140,7 @@ if(any(class(null_model)=='glmmkin')){
   pheno_id <- as.character(null_model$data$ID)
 }
 variant_id <- seqGetData(geno_all, "variant.id")
-if (agds_file!='None'){
+if (agds_file_input!='None'){
   filter <- seqGetData(geno_all, "annotation/filter")
   AVGDP <- seqGetData(geno_all, "annotation/info/AVGDP")
   SNVlist <- filter == "PASS" & AVGDP > 10 & isSNV(geno_all)
@@ -214,7 +214,7 @@ test_chunk <- function( indx ){
   #First for gene based/agg unit based (candidate or full chromosome)
   #Agg unit option adapted from https://github.com/AnalysisCommons/genesis_wdl/blob/master/genesis_tests.R
   if(agg_file!='None'){
-    if (agds_file!='None'){
+    if (agds_file_input!='None'){
       seqSetFilter(geno,sample.id=pheno_id,variant.id=variant_id[SNVlist],verbose=F)	
     }
     agg_var <- aggregateGRangesList(agg_units[agg_units$group_id %in% agg_chunks[[indx]],])
@@ -331,7 +331,7 @@ test_chunk <- function( indx ){
     variant_info <- variantInfo(geno, alleles = FALSE, expanded=FALSE)
     current_windows <- windows[window_chunks[[indx]]]
     indx_vars <- (variant_info$pos>=start(current_windows)[1]) & (variant_info$pos<=tail(end(current_windows),1))
-    if (agds_file!='None'){
+    if (agds_file_input!='None'){
       seqSetFilter(geno,sample.id=pheno_id,variant.id=variant_info$variant.id[SNVlist & indx_vars])
     } else {
       seqSetFilter(geno,sample.id=pheno_id,variant.id=variant_info$variant.id[indx_vars])
@@ -406,7 +406,7 @@ test_chunk <- function( indx ){
     #Extract variants in region
     variant_info_chunk <- variantInfo(geno, alleles = FALSE, expanded=FALSE)
     indx_vars <- (variant_info_chunk$pos>=start(range_data[indx]@ranges)) & (variant_info_chunk$pos<=end(range_data[indx]@ranges))
-    if (agds_file!='None'){
+    if (agds_file_input!='None'){
       seqSetFilter(geno,sample.id=pheno_id,variant.id=variant_info_chunk$variant.id[SNVlist & indx_vars])
     } else {
       seqSetFilter(geno,sample.id=pheno_id,variant.id=variant_info_chunk$variant.id[indx_vars])
@@ -512,4 +512,4 @@ if(!is.null(results)){
 
 
 # Save output
-fwrite(results, file=paste0(results_file,'_chr',chr,".csv.gz"))
+fwrite(results, file=paste0(results_file_name,'_chr',chr,".csv.gz"))
